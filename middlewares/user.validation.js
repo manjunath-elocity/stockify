@@ -35,11 +35,13 @@ const validateRegister = [
 
     body('password')
         .escape()
-        .trim()
         .notEmpty().withMessage('Password should not be empty')
         .isLength({ min: 8 }).withMessage('Password should be at least 8 characters long')
-        .matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_]).+$/).withMessage('Password should contain at least one number, one uppercase letter, one lowercase letter, and one special character'),
-
+        .matches(/[A-Z]/).withMessage('Password must contain at least one uppercase letter')
+        .matches(/[a-z]/).withMessage('Password must contain at least one lowercase letter')
+        .matches(/[0-9]/).withMessage('Password must contain at least one number')
+        .matches(/[^\w\s]/).withMessage('Password must contain at least one symbol'),
+        
     (req, res, next) => {
         const errors = validationResult(req)
         if (!errors.isEmpty()) {
@@ -79,11 +81,14 @@ const validateLogin = [
     (req, res, next) => {
         const errors = validationResult(req)
         if (!errors.isEmpty()) {
-            console.log(errors.array())
-            return res.status(400).json({ errors: errors.array() })
+            return res.status(400).json({ 
+                success: false,
+                message: 'Validation failed',
+                errors: errors.array() 
+            })
         }
         next()
     }
 ]
 
-export default { validateRegister, validateLogin }
+export { validateRegister, validateLogin }

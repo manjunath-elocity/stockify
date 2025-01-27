@@ -7,7 +7,6 @@ const registerUser = async (user) => {
     const existingUser = await User.findOne({ emailId })
     if (existingUser) {
         const error = new Error('User already exists')
-        console.log(error)
         error.code = 409
         throw error
     }
@@ -15,25 +14,31 @@ const registerUser = async (user) => {
     const passwordHash = await bcrypt.hash(password, 10)
     const newUser = new User({ firstName, lastName, emailId, password: passwordHash })
     await newUser.save()
-    return newUser
+
+    return { 
+        id: newUser._id, 
+        emailId: newUser.emailId, 
+        firstName: newUser.firstName, 
+        lastName: newUser.lastName 
+    }
 }
 
 const loginUser = async (emailId, password) => {
     const user = await User.findOne({ emailId })
     if (!user) {
-        throw new Error('Invalid email or password')
+        const error = new Error('Invalid email or password')
+        error.code = 401
+        throw error
     }
 
     const isPasswordMatch = await bcrypt.compare(password, user.password)
-    if(!isPasswordMatch) {
-        throw new Error('Invalid email or password')
+    if(!isPasswordMatch) {        
+        const error = new Error('Invalid email or password')
+        error.code = 401
+        throw error
     }
 
-    const token = jwt.sign(
-        { id: user._id, emailId }, 
-        process.env.JWT_SECRET, 
-        { expiresIn: '1h', httpOnly: true, secure: true}
-    )
+    const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h'})
 
     return token
 }
