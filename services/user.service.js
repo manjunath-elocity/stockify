@@ -1,4 +1,4 @@
-import User from "../models/user.js"
+import User from "../models/User.js"
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 
@@ -6,12 +6,15 @@ const registerUser = async (user) => {
     const { firstName, lastName = '', emailId, password } = user
     const existingUser = await User.findOne({ emailId })
     if (existingUser) {
-        throw new Error('User already exists')
+        const error = new Error('User already exists')
+        console.log(error)
+        error.code = 409
+        throw error
     }
+    
     const passwordHash = await bcrypt.hash(password, 10)
     const newUser = new User({ firstName, lastName, emailId, password: passwordHash })
     await newUser.save()
-    console.log('User Registered')
     return newUser
 }
 

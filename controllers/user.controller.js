@@ -8,12 +8,17 @@ userRouter.post('/register', validateUser.validateRegister, async (req, res,) =>
     try {
         const user = req.body
         const newUser = await userService.registerUser(user)
-        res.status(201).json({ message: 'User Registered', user: newUser })
+        res.status(201).json({ 
+            success: true, 
+            message: 'User registered successfully',
+            user: {id: newUser.id, emailId: newUser.emailId, firstName: newUser.firstName, lastName: newUser.lastName }
+        })
     } catch (error) {
-        if(error.code === 11000) {
-            return res.status(400).json({ message: 'User already exists' })
+        console.log(error)
+        if(error.code) {
+            return res.status(error.code).json({ success: false, message: error.message })
         }
-        res.status(500).json({ message: 'Internal server error' })
+        res.status(500).json({ success: false, message: 'Internal server error' })
     }
 })
 

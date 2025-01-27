@@ -1,7 +1,6 @@
 import { body, validationResult } from 'express-validator';
 
 const validateRegister = [
-
     body().custom((value, { req }) => {
         const allowedFields = ['firstName', 'lastName', 'emailId', 'password'];
         const receivedFields = Object.keys(req.body);
@@ -44,15 +43,18 @@ const validateRegister = [
     (req, res, next) => {
         const errors = validationResult(req)
         if (!errors.isEmpty()) {
-            console.log(errors.array())
-            return res.status(400).json({ errors: errors.array() })
+            return res.status(400).json({ 
+                success: false,
+                message: 'Validation failed',
+                errors: errors.array() 
+            })
         }
         next()
     }
 ]
 
 const validateLogin = [
-    body.custom((value, { req }) => {
+    body().custom((value, { req }) => {
         const allowedFields = ['emailId', 'password'];
         const receivedFields = Object.keys(req.body);
         const invalidFields = receivedFields.filter(field => !allowedFields.includes(field));

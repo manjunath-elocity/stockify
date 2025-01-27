@@ -12,14 +12,21 @@ const itemSchema = new mongoose.Schema({
     },
     quantity: {
         type: Number,
-        required: true
+        required: true,
+        min: 0
     },
     price: {
         type: Number,
-        required: true
+        required: true,
+        min: 0
     },
     category: {
         type: String,
+        required: true
+    },
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
         required: true
     }
 }, {
