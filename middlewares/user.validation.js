@@ -51,4 +51,37 @@ const validateRegister = [
     }
 ]
 
-export { validateRegister }
+const validateLogin = [
+    body.custom((value, { req }) => {
+        const allowedFields = ['emailId', 'password'];
+        const receivedFields = Object.keys(req.body);
+        const invalidFields = receivedFields.filter(field => !allowedFields.includes(field));
+        if (invalidFields.length > 0) {
+            throw new Error(`Invalid fields: ${invalidFields.join(', ')}`);
+        }
+        return true;
+    }),
+
+    body('emailId')
+        .escape()
+        .trim()
+        .notEmpty().withMessage('Email should not be empty')
+        .isEmail().withMessage('Invalid email address'),
+
+
+    body('password')
+        .escape()
+        .trim()
+        .notEmpty().withMessage('Password should not be empty'),
+
+    (req, res, next) => {
+        const errors = validationResult(req)
+        if (!errors.isEmpty()) {
+            console.log(errors.array())
+            return res.status(400).json({ errors: errors.array() })
+        }
+        next()
+    }
+]
+
+export default { validateRegister, validateLogin }

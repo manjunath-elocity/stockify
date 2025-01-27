@@ -1,6 +1,6 @@
 import express from 'express'
 import connectDB from './config/connectDB.js'
-import userRouter from './controllers/userController.js'
+import userRouter from './controllers/user.controller.js'
 
 const app = express()
 app.use(express.json())
