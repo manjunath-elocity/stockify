@@ -1,4 +1,4 @@
-import { body, param, validationResult } from 'express-validator';
+import { body, param, validationResult, query } from 'express-validator';
 
 const validateAddItem = [
     body().custom((value, { req }) => {
@@ -50,6 +50,21 @@ const validateAddItem = [
             })
         }
         next()
+    }
+]
+
+const validateGetItems = [
+    query('category').optional().isString().trim(),
+    query('minPrice').optional().isFloat({ min: 0 }).toFloat(),
+    query('maxPrice').optional().isFloat({ min: 0 }).toFloat(),
+    query('sortBy').optional().isIn(['price', 'quantity', 'totalCost']),
+    query('sortOrder').optional().isIn(['asc', 'desc']),
+    (req, res, next) => {
+      const { minPrice, maxPrice } = req.query;
+      if (minPrice && maxPrice && parseFloat(minPrice) > parseFloat(maxPrice)) {
+        return res.status(400).json({ error: 'minPrice cannot exceed maxPrice' });
+      }
+      next();
     }
 ]
 
@@ -148,4 +163,4 @@ const validateDeleteItem = [
     }
 ]
 
-export { validateAddItem, validateGetItemById, validateUpdateItem, validateDeleteItem }
+export { validateAddItem, validateGetItems, validateGetItemById, validateUpdateItem, validateDeleteItem }

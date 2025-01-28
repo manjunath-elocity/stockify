@@ -1,5 +1,5 @@
 import express from 'express';
-import { validateAddItem, validateDeleteItem, validateGetItemById, validateUpdateItem } from '../middlewares/item.validation.js';
+import { validateAddItem, validateDeleteItem, validateGetItemById, validateGetItems, validateUpdateItem } from '../middlewares/item.validation.js';
 import authenticateToken from '../middlewares/auth.js';
 import itemService from '../services/item.services.js';
 
@@ -18,6 +18,18 @@ itemRouter.post('/', authenticateToken, validateAddItem, async (req, res) => {
         res.status(500).json({ success: false, message: 'Internal server error' });
     }
 });
+
+itemRouter.get('/', authenticateToken, validateGetItems, async (req, res) => {
+    try {
+        const items = await itemService.getItems(req.query);
+        res.status(200).json({ success: true, message: 'Items retrieved successfully', items });
+    } catch (error) {
+        if (error.code) {
+            return res.status(error.code).json({ success: false, message: error.message });
+        }
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+})
 
 itemRouter.get('/:id', authenticateToken, validateGetItemById, async (req, res) => {
     try {
