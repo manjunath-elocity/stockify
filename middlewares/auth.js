@@ -1,11 +1,10 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 
-const authMiddleware = async (req, res, next) => {
+const authenticateToken = async (req, res, next) => {
     try {
         const { token } = req.cookies;
 
-        // Check if token exists
         if (!token) {
             return res.status(401).json({
                 success: false,
@@ -13,11 +12,9 @@ const authMiddleware = async (req, res, next) => {
             });
         }
 
-        // Verify the token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-        // Find the user by ID in the decoded token
-        const user = await User.findById(decoded.userId); // Assuming payload uses `userId`
+        const user = await User.findById(decoded._id); 
 
         if (!user) {
             return res.status(404).json({
@@ -25,8 +22,7 @@ const authMiddleware = async (req, res, next) => {
                 message: 'Authentication failed: User not found',
             });
         }
-
-        // Attach user info to the request
+        
         req.user = {
             _id: user._id,
             emailId: user.emailId,
@@ -34,7 +30,6 @@ const authMiddleware = async (req, res, next) => {
             lastName: user.lastName,
         };
 
-        // Pass control to the next middleware/route
         next();
     } catch (error) {
         // Handle specific JWT errors
@@ -61,4 +56,4 @@ const authMiddleware = async (req, res, next) => {
     }
 };
 
-export default authMiddleware;
+export default authenticateToken;

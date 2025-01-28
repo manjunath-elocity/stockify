@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const itemSchema = new mongoose.Schema({
     name: {
         type: String,
+        unique: true,
         required: true,
         trim: true
     },
@@ -24,7 +25,7 @@ const itemSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    userId: {
+    addedBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
