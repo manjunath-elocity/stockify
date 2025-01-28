@@ -31,6 +31,17 @@ itemRouter.get('/', authenticateToken, validateGetItems, async (req, res) => {
     }
 })
 
+// To get the items with low stock (quantity < 10)
+itemRouter.get('/low-stock', authenticateToken, async (req, res) => {
+    try {
+        const lowStockNo = req.query.lowStockNo || 10;
+        const items = await itemService.getLowStockItems(lowStockNo);
+        res.status(200).json({ success: true, message: 'Items retrieved successfully', items });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+})
+
 itemRouter.get('/:id', authenticateToken, validateGetItemById, async (req, res) => {
     try {
         const itemId = req.params.id;
@@ -70,5 +81,6 @@ itemRouter.delete('/:id', authenticateToken, validateDeleteItem, async (req, res
         res.status(500).json({ success: false, message: 'Internal server error' });
     }
 })
+
 
 export default itemRouter;

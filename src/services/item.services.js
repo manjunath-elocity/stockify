@@ -14,6 +14,8 @@ const addItem = async (item, userId) => {
     return newItem
 }
 
+// filter items based on category, minPrice, maxPrice
+// sort items by category, price, quantity, totalCost
 const getItems = async (queryParams) => {
     const { category, minPrice, maxPrice, sortBy, sortOrder = 'asc' } = queryParams;
     const filter = {};
@@ -97,6 +99,10 @@ const deleteItem = async (itemId) => {
     return { message : 'Item deleted successfully' }
 }
 
+const getLowStockItems = async (lowStockNo) => {
+    const items = await Item.find({ quantity: { $lt: lowStockNo } });
+    return items;
+}
 
 
-export default { addItem, getItems, getItemById, updateItem, deleteItem }
+export default { addItem, getItems, getItemById, updateItem, deleteItem, getLowStockItems }
