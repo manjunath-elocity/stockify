@@ -1,20 +1,23 @@
 import express from 'express'
 import connectDB from './config/connectDB.js'
 import userRouter from './controllers/user.controller.js'
-import authMiddleware from './middlewares/auth.js'
 import cookieParser from 'cookie-parser'
 import itemRouter from './controllers/item.controller.js'
+
+import swaggerUi from 'swagger-ui-express';
+import YAML from 'yamljs';
 
 const app = express()
 app.use(express.json())
 app.use(cookieParser())
 
+// Swagger Documentation 
+const swaggerDocument = YAML.load('./swagger.yaml');
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+// routes
 app.use('/api', userRouter)
 app.use('/api/items', itemRouter)
-
-app.get('/test', authMiddleware, (req, res) => {
-    res.send("Test Route")
-})
 
 connectDB()
     .then(() => {

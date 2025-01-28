@@ -39,7 +39,6 @@ const getItems = async (queryParams) => {
     }
     
     const result = await Item.aggregate(pipeline)
-    console.log(result)
 
     return {
         items: result.map(item => ({

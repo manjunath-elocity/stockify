@@ -1,0 +1,933 @@
+openapi: 3.0.0
+info:
+  title: Stockify API
+  description: API for Inventory Management
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000/api
+    description: Local development server
+tags:
+  - name: User
+    description: Operations related to user management
+paths:
+  /register:
+    post:
+      tags:
+        - User
+      summary: Register a new user
+      description: Register a new user with the provided details.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                  description: User's first name
+                  example: Manjunath
+                lastName:
+                  type: string
+                  description: User's last name
+                  example: R
+                emailId:
+                  type: string
+                  format: email
+                  description: User's email address
+                  example: manjunath.r@email.com
+                password:
+                  type: string
+                  description: User's password
+                  example: Password123!
+              required:
+                - firstName
+                - emailId
+                - password
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: User registered successfully
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: 64f1a2b3c7e6f8a9b0c1d2e3
+                      emailId:
+                        type: string
+                        example: john.doe@example.com
+                      firstName:
+                        type: string
+                        example: John
+                      lastName:
+                        type: string
+                        example: Doe
+        '400':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Validation failed
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        msg:
+                          type: string
+                          example: First name should be between 2 and 25 characters
+                        param:
+                          type: string
+                          example: firstName
+                        location:
+                          type: string
+                          example: body
+        '409':
+          description: User already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: User already exists
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Internal server error
+
+  /login:
+    post:
+      tags:
+        - User
+      summary: Login a user
+      description: Authenticate a user and return a JWT token stored in a cookie.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                emailId:
+                  type: string
+                  format: email
+                  description: User's email address
+                  example: manjunath.r@email.com
+                password:
+                  type: string
+                  description: User's password
+                  example: Password123!
+              required:
+                - emailId
+                - password
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Login successful
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: token=<JWT_TOKEN>; Path=/; HttpOnly; Secure; Expires=Wed, 09 Jun 2023 10:00:00 GMT
+        '400':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Validation failed
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        msg:
+                          type: string
+                          example: Email should not be empty
+                        param:
+                          type: string
+                          example: emailId
+                        location:
+                          type: string
+                          example: body
+        '401':
+          description: Invalid email or password
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Invalid email or password
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Internal server error
+
+  /items:
+    post:
+      tags:
+        - Items
+      summary: Add a new item
+      description: Create a new item in the system (requires authentication)
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 3
+                  example: "Widget X"
+                description:
+                  type: string
+                  example: "High-quality widget"
+                price:
+                  type: number
+                  format: float
+                  minimum: 0
+                  example: 29.99
+                quantity:
+                  type: integer
+                  minimum: 0
+                  example: 100
+                category:
+                  type: string
+                  example: "Electronics"
+              required:
+                - name
+                - price
+                - quantity
+                - category
+      responses:
+        '201':
+          description: Item created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Item added successfully"
+                  item:
+                    $ref: '#/components/schemas/Item'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Validation failed"
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        msg:
+                          type: string
+                        param:
+                          type: string
+                        location:
+                          type: string
+              example:
+                success: false
+                message: "Validation failed"
+                errors:
+                  - msg: "Name should be at least 3 characters long"
+                    param: "name"
+                    location: "body"
+        '401':
+          description: Authentication failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Authentication failed: Invalid token"
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Authentication failed: User not found"
+        '409':
+          description: Item already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Item already exists"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Internal server error"
+
+
+  /items/:
+    get:
+      tags:
+        - Items
+      summary: Retrieve filtered and sorted items
+      description: |
+        Returns a list of items with optional filtering and sorting.
+        Requires authentication via JWT token.
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: query
+          name: category
+          schema:
+            type: string
+          description: Filter items by category
+        - in: query
+          name: minPrice
+          schema:
+            type: number
+            format: float
+            minimum: 0
+          description: Minimum price filter (inclusive)
+        - in: query
+          name: maxPrice
+          schema:
+            type: number
+            format: float
+            minimum: 0
+          description: Maximum price filter (inclusive)
+        - in: query
+          name: sortBy
+          schema:
+            type: string
+            enum: [price, quantity, totalCost]
+          description: Field to sort by (default order ascending)
+        - in: query
+          name: sortOrder
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: asc
+          description: Sort order (ascending or descending)
+      responses:
+        '200':
+          description: Successfully retrieved items
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Items retrieved successfully
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        _id:
+                          type: string
+                          example: 5f8d0d55b54764421b7156da
+                        name:
+                          type: string
+                          example: Item Name
+                        category:
+                          type: string
+                          example: electronics
+                        price:
+                          type: number
+                          example: 99.99
+                        quantity:
+                          type: integer
+                          example: 10
+                        totalCost:
+                          type: number
+                          example: 999.9
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: minPrice cannot exceed maxPrice
+        '401':
+          description: Authentication failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    examples:
+                      expiredToken: Authentication failed: Token has expired
+                      invalidToken: Authentication failed: Invalid token
+                      noToken: Authentication failed: No token provided
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Internal server error
+
+  /items/{id}:
+    get:
+      tags:
+        - Items
+      summary: Get an item by ID
+      description: Retrieve a specific item by its MongoDB ID with calculated totalCost
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: mongo-id
+            example: 507f1f77bcf86cd799439011
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Item retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemResponse'
+              example:
+                success: true
+                message: 'Item retrieved successfully'
+                item:
+                  _id: 507f1f77bcf86cd799439011
+                  name: 'Sample Item'
+                  price: 29.99
+                  quantity: 5
+                  totalCost: 149.95
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              example:
+                success: false
+                message: 'Validation failed'
+                errors:
+                  - msg: 'Invalid item ID'
+                    param: 'id'
+        '401':
+          description: Authentication error
+          content:
+            application/json:
+              examples:
+                NoToken:
+                  value:
+                    success: false
+                    message: 'Authentication failed: No token provided'
+                InvalidToken:
+                  value:
+                    success: false
+                    message: 'Authentication failed: Invalid token'
+                ExpiredToken:
+                  value:
+                    success: false
+                    message: 'Authentication failed: Token has expired'
+        '404':
+          description: Item not found
+          content:
+            application/json:
+              example:
+                success: false
+                message: 'Item not found'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              example:
+                success: false
+                message: 'Internal server error'
+
+    put:
+      tags:
+        - Items
+      summary: Update an existing item
+      description: |
+        Updates item details. Requires authentication with valid JWT token.
+        Only allowed fields can be updated.
+      parameters:
+        - name: id
+          in: path
+          description: MongoDB ID of the item to update
+          required: true
+          schema:
+            type: string
+            pattern: ^[0-9a-fA-F]{24}$
+          example: 507f1f77bcf86cd799439011
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 3
+                  example: "Premium Widget"
+                description:
+                  type: string
+                  example: "High-quality widget with advanced features"
+                price:
+                  type: number
+                  minimum: 0
+                  example: 29.99
+                quantity:
+                  type: integer
+                  minimum: 0
+                  example: 100
+                category:
+                  type: string
+                  example: "Electronics"
+              additionalProperties: false
+      responses:
+        '200':
+          description: Item updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Authentication failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Item name conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      tags:
+        - Items
+      summary: Delete an item by ID
+      description: |
+        Deletes a specific item. Requires valid authentication token and valid item ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9a-fA-F]{24}$'
+            example: 507f1f77bcf86cd799439011
+          description: MongoDB ID of the item to delete
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Item deleted successfully
+          content:
+            application/json:
+              example:
+                success: true
+                message: Item deleted successfully
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              example:
+                success: false
+                message: Validation failed
+                errors:
+                  - msg: Invalid item ID
+                    param: id
+                    location: params
+        '401':
+          description: Authentication failure
+          content:
+            application/json:
+              examples:
+                NoToken:
+                  value:
+                    success: false
+                    message: Authentication failed: No token provided
+                InvalidToken:
+                  value:
+                    success: false
+                    message: Authentication failed: Invalid token
+                ExpiredToken:
+                  value:
+                    success: false
+                    message: Authentication failed: Token has expired
+        '404':
+          description: Not found
+          content:
+            application/json:
+              examples:
+                ItemNotFound:
+                  value:
+                    success: false
+                    message: Item not found
+                UserNotFound:
+                  value:
+                    success: false
+                    message: Authentication failed: User not found
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              example:
+                success: false
+                message: Internal server error
+
+  /items/low-stock:
+    get:
+      tags:
+        - Items
+      summary: Get low stock items
+      description: Retrieve items with quantity below specified threshold (requires authentication)
+      parameters:
+        - in: query
+          name: lowStockNo
+          schema:
+            type: integer
+            default: 10
+          description: Threshold quantity to consider as low stock
+          example: 5
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved low stock items
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Items retrieved successfully
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Item'
+        '401':
+          description: Authentication failure
+          content:
+            application/json:
+              examples:
+                NoToken:
+                  value:
+                    success: false
+                    message: Authentication failed: No token provided
+                ExpiredToken:
+                  value:
+                    success: false
+                    message: Authentication failed: Token has expired
+                InvalidToken:
+                  value:
+                    success: false
+                    message: Authentication failed: Invalid token
+        '404':
+          description: User not found
+          content:
+            application/json:
+              example:
+                success: false
+                message: Authentication failed: User not found
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              example:
+                success: false
+                message: Internal server error
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: token
+  schemas:
+    ItemResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+          example: "Item updated successfully"
+        message:
+          type: string
+        item:
+          type: object
+          properties:
+            _id:
+              type: string
+              format: mongo-id
+            name:
+              type: string
+            price:
+              type: number
+            quantity:
+              type: integer
+            totalCost:
+              type: number
+              description: Calculated field (price * quantity)
+          required:
+            - _id
+            - name
+            - price
+            - quantity
+            - totalCost 
+
+    ItemWithTotalCost:
+      allOf:
+        - $ref: '#/components/schemas/Item'
+        - type: object
+          properties:
+            totalCost:
+              type: number
+              format: float
+              description: Calculated price * quantity
+              example: 4499.5
+    Item:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 5f8d0d55b54764421b7156da
+        name:
+          type: string
+          example: Widget A
+        description:
+          type: string
+          example: High-quality widget
+        quantity:
+          type: number
+          example: 7
+        price:
+          type: number
+          example: 29.99
+        category:
+          type: string
+          example: "Electronics"
+      required:
+        - name
+        - price
+        - quantity
+        - category
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "Item not found"
+
+    ValidationError:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "Validation failed"
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              msg:
+                type: string
+                example: "Name should be at least 3 characters long"
+              param:
+                type: string
+                example: "name"
+              location:
+                type: string
+                example: "body"
+  responses:
+    Unauthorized:
+      description: Authentication failed
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              message:
+                type: string
+                example: "Authentication failed: Invalid token"
+    UserNotFound:
+      description: User not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              message:
+                type: string
+                example: "Authentication failed: User not found"
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              message:
+                type: string
+                example: "Internal server error"
