@@ -1,4 +1,4 @@
-import Item from "../models/item"
+import Item from "../models/item.js"
 
 
 const addItem = async (item, userId) => {
@@ -10,17 +10,9 @@ const addItem = async (item, userId) => {
         throw error
     }
 
-    const newItem = new Item({ ...item, addedBy: userId })
+    const newItem = new Item({ ...item})
     await newItem.save()
-    return {
-        id: newItem._id,
-        name: newItem.name,
-        description: newItem.description,
-        quantity: newItem.quantity,
-        price: newItem.price,
-        category: newItem.category,
-        totalCost: newItem.quantity * newItem.price
-    }
+    return newItem
 }
 
 const getItemById = async (itemId) => {
@@ -30,7 +22,10 @@ const getItemById = async (itemId) => {
         error.code = 404
         throw error
     }
-    return item
+    return {
+        ...item._doc,
+        totalCost: item.price * item.quantity
+    }
 }
 
 const updateItem = async (itemId, updateData) => {
@@ -55,6 +50,18 @@ const updateItem = async (itemId, updateData) => {
     return item
 }
 
+const deleteItem = async (itemId) => {
+    const item = await Item.findById(itemId)
+    console.log(item)
+    if (!item) {
+        const error = new Error('Item not found')
+        error.code = 404
+        throw error
+    }
+    await Item.deleteOne({ _id: itemId })
+    return { message : 'Item deleted successfully' }
+}
 
 
-export default { addItem, getItemById, updateItem }
+
+export default { addItem, getItemById, updateItem, deleteItem }

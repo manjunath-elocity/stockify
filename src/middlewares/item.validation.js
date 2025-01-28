@@ -1,7 +1,7 @@
 import { body, param, validationResult } from 'express-validator';
 
 const validateAddItem = [
-    body.custom((value, { req }) => {
+    body().custom((value, { req }) => {
         const allowedFields = ['name', 'description', 'price', 'quantity', 'category'];
         const receivedFields = Object.keys(req.body);
         const invalidFields = receivedFields.filter(field => !allowedFields.includes(field));
@@ -76,7 +76,7 @@ const validateUpdateItem = [
         .escape()
         .isMongoId().withMessage('Invalid item ID'),
 
-    body.custom((value, { req }) => {
+    body().custom((value, { req }) => {
         const allowedFields = ['name', 'description', 'price', 'quantity', 'category'];
         const receivedFields = Object.keys(req.body);
         const invalidFields = receivedFields.filter(field => !allowedFields.includes(field));
@@ -130,4 +130,22 @@ const validateUpdateItem = [
     }
 ]
 
-export { validateAddItem, validateGetItemById, validateUpdateItem }
+const validateDeleteItem = [
+    param('id')
+        .escape()
+        .isMongoId().withMessage('Invalid item ID'),
+
+    (req, res, next) => {
+        const errors = validationResult(req)
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ 
+                success: false,
+                message: 'Validation failed',
+                errors: errors.array() 
+            })
+        }
+        next()
+    }
+]
+
+export { validateAddItem, validateGetItemById, validateUpdateItem, validateDeleteItem }

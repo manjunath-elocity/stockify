@@ -30,6 +30,8 @@ const authenticateToken = async (req, res, next) => {
             lastName: user.lastName,
         };
 
+        console.log('User authenticated');
+
         next();
     } catch (error) {
         // Handle specific JWT errors

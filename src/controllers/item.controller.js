@@ -1,7 +1,7 @@
 import express from 'express';
-import { validateAddItem, validateGetItemById, validateUpdateItem } from '../middlewares/item.validation';
-import authenticateToken from '../middlewares/auth';
-import itemService from '../services/item.services';
+import { validateAddItem, validateDeleteItem, validateGetItemById, validateUpdateItem } from '../middlewares/item.validation.js';
+import authenticateToken from '../middlewares/auth.js';
+import itemService from '../services/item.services.js';
 
 const itemRouter = express.Router();
 
@@ -9,8 +9,7 @@ const itemRouter = express.Router();
 itemRouter.post('/', authenticateToken, validateAddItem, async (req, res) => {
     try {
         const item = req.body;
-        const userId = req.user._id;
-        const newItem = await itemService.addItem(item, userId);
+        const newItem = await itemService.addItem(item);
         res.status(201).json({ success: true, message: 'Item added successfully', item: newItem });
     } catch (error) {
         if (error.code) {
@@ -33,7 +32,7 @@ itemRouter.get('/:id', authenticateToken, validateGetItemById, async (req, res) 
     }
 }) 
 
-itemRouter.put(':/id', authenticateToken, validateUpdateItem, async (req, res) => {
+itemRouter.put('/:id', authenticateToken, validateUpdateItem, async (req, res) => {
     try {
         const itemId = req.params.id;
         const updateData = req.body;
@@ -47,11 +46,11 @@ itemRouter.put(':/id', authenticateToken, validateUpdateItem, async (req, res) =
     }
 })
 
-itemRouter.delete(':/id', authenticateToken, async (req, res) => {
+itemRouter.delete('/:id', authenticateToken, validateDeleteItem, async (req, res) => {
     try {
         const itemId = req.params.id;
-        await itemService.deleteItem(itemId);
-        res.status(200).json({ success: true, message: 'Item deleted successfully' });
+        const result = await itemService.deleteItem(itemId);
+        res.status(200).json({ success: true, message: result.message });
     } catch (error) {
         if (error.code) {
             return res.status(error.code).json({ success: false, message: error.message });
