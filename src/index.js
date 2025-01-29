@@ -19,10 +19,12 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use('/api', userRouter)
 app.use('/api/items', itemRouter)
 
+const PORT = process.env.PORT || 3000
+
 connectDB()
     .then(() => {
         console.log("Database Connection Established.")
-        app.listen(3000, () => console.log("Server Running on PORT 3000"))
+        app.listen(PORT, () => console.log("Server Running on PORT 3000"))
     })
     .catch(() => {
         console.log("Database could not be connected")
