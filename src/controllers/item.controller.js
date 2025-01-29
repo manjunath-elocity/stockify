@@ -1,5 +1,5 @@
 import express from 'express';
-import { validateAddItem, validateDeleteItem, validateGetItemById, validateGetItems, validateUpdateItem } from '../middlewares/item.validation.js';
+import { validateAddItem, validateDeleteItem, validateGetItemById, validateGetItems, validateLowStock, validateUpdateItem } from '../middlewares/item.validation.js';
 import authenticateToken from '../middlewares/auth.js';
 import itemService from '../services/item.services.js';
 
@@ -32,7 +32,7 @@ itemRouter.get('/', authenticateToken, validateGetItems, async (req, res) => {
 })
 
 // To get the items with low stock (quantity < 10)
-itemRouter.get('/low-stock', authenticateToken, async (req, res) => {
+itemRouter.get('/low-stock', authenticateToken, validateLowStock ,async (req, res) => {
     try {
         const lowStockNo = req.query.lowStockNo || 10;
         const items = await itemService.getLowStockItems(lowStockNo);
