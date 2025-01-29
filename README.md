@@ -39,7 +39,7 @@ Stockify is a simple inventory management system built with Node.js, Express, an
     ```
 3. **Start the server**:
     ```bash
-    npm run dev
+    npm start
     ```
 4. **Test the API**:
     Open your browser and navigate to [http://localhost:3000/api-docs/](http://localhost:3000/api-docs/) to access the interactive Swagger UI for testing the API endpoints.
